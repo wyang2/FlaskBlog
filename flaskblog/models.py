@@ -1,18 +1,24 @@
-from flaskblog import db #import db in __init__.py
+from flaskblog import db, login_manager #import db in __init__.py
 from datetime import datetime
+from flask_login import UserMixin
 
-class User(db.Model):
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique = True, nullable = False)
-    username = db.Column(db.String(20), unique = True, nullable = False)
-    image = db.Column(db.String(20), default = 'default.jpg', nullable = False)
-    password = db.Column(db.String(60), nullable = False)
-    posts = db.relationship('Post',backref = 'author', lazy = True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
+    password = db.Column(db.String(60), nullable=False)
+    posts = db.relationship('Post', backref='author', lazy=True)
 
     def __repr__(self):
-        return f"User('{self.username}','{self.email}','{self.username}')"
+        return f"User('{self.username}', '{self.email}', '{self.image_file}')"
 
-class Post(db.Model):
+class Post(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable = False)
     date = db.Column(db.DateTime, nullable=False, default = datetime.utcnow)
@@ -20,4 +26,4 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     def __repr__(self):
-            return f"Post('{self.title}','{self.date}')"
+        return f"Post('{self.title}','{self.date}')"
