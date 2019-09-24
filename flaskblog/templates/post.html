@@ -5,10 +5,10 @@
     <div class="media-body">
         <div class="article-metadata">
             <img class="rounded-circle article-img" src="{{url_for('static', filename = post.author.image_file)}}">
-            <a class="mr-2" href={{url_for('account')}}>{{ post.author.username }}</a>
+            <a class="mr-2" href="#">{{ post.author.username }}</a>
             <small class="text-muted">{{ post.date.strftime('%y-%m-%d') }}</small>
         </div>
-        <h2><a class="article-title" href="{{url_for('post',post_id = post.id)}}">{{ post.title }}</a></h2>
+        <h2 class="article-title">{{ post.title }}</h2>
         <p class="article-content">{{ post.content }}</p>
     </div>
 </article>
