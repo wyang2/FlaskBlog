@@ -120,3 +120,33 @@ def post(post_id):
     post = Post.query.get_or_404(post_id)
     return render_template('post.html',title = post.title, post = post)
 
+@app.route('/post/<int:post_id>/update', methods=['GET','POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.user_id != current_user.id:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit(): #Deal with post method
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Post updated successfully','success')
+        return redirect(url_for('post',post_id = post.id))
+    elif request.method == 'GET': #Deal with get method
+        form.title.data = post.title
+        form.content.data = post.content
+    return render_template('create_post.html',title = 'Update Post', form = form, legend = 'Update Post')
+
+@app.route('/post/<int:post_id>/delete', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.user_id != current_user.id:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Post has been deleted successfully','success')
+    return redirect(url_for('home'))
+
+
