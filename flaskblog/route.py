@@ -1,5 +1,5 @@
 from flaskblog.models import User, Post
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from flaskblog.forms import RegistrationForm, LoginForm, PostForm, UpdateAccountForm
 from flaskblog import app, db, bcrypt
 from flask_login import current_user
@@ -7,25 +7,11 @@ import secrets,os
 from PIL import Image
 from flask_login import login_user, current_user, logout_user, login_required
 
-posts = [
-    {
-    'author': 'Big Flower Cat',
-    'title': 'catch mouse',
-    'content':'How to catch mouse',
-    'date_posted': 'May 17, 2019',
-    },
-    {
-    'author': 'Big Flower Cat',
-    'title': 'catch mouse',
-    'content':'How to catch mouse',
-    'date_posted': 'May 17, 2019',
-    }
-]
-
 @app.route('/')
 @app.route('/home')
 def home():
-    posts = Post.query.all()
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date.desc()).paginate(page=page, per_page=5)
     return render_template('home.html', posts = posts)
 
 @app.route('/about')
@@ -148,5 +134,12 @@ def delete_post(post_id):
     db.session.commit()
     flash('Post has been deleted successfully','success')
     return redirect(url_for('home'))
+
+@app.route('/post/<string:username>')
+def user_posts(username):
+    page = request.args.get('page',1, type=int)
+    user = User.query.filter_by(username = username).first_or_404()
+    posts = Post.query.filter_by(author = user).order_by(Post.date.desc()).paginate(page=page, per_page = 5)
+    return render_template('user_posts.html', user=user, posts=posts)
 
 
